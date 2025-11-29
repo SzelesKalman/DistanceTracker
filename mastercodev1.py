@@ -5,13 +5,15 @@ from ultralytics import YOLO
 from deep_sort_realtime.deepsort_tracker import DeepSort
 import sys
 
+"/mnt/d/KALMAN ADAT/BME/KUTATOMUNKA/PyCharm/motorcycle_mpc/ray_save/PPO_PathTrackEnv_200_spielberg_v4_seed01"
+
 VIDEOINPUT = "motoros_video_5.mp4"
 VIDEOOUTPUT = "distancetracker_v0.mp4"
 MODEL_PATH = "yolov8x-seg.pt"
 MASK_CLASSES = [0, 3]
 TRACK_CLASS = 3
 
-CONFIDENCE_THRESHOLD = 0.70
+CONFIDENCE_THRESHOLD = 0.72
 
 calibration_points = []
 
@@ -113,8 +115,8 @@ while True:
             user_w = float(input("Kijelölt SZÉLESSÉG (méter): "))
             user_l = float(input("Kijelölt HOSSZ (méter): "))
         except ValueError:
-            print("Hibás adat! Default: 3.5m x 15m")
-            user_w, user_l = 3.5, 15.0
+            print("Hibás adat! Default: 6m x 20m")
+            user_w, user_l = 6.0, 20.0
         print("=" * 40 + "\n")
 
         w_ref = mMx - mx
