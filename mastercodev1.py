@@ -5,7 +5,6 @@ from ultralytics import YOLO
 from deep_sort_realtime.deepsort_tracker import DeepSort
 import sys
 
-# --- KONFIGURÁCIÓ ---
 VIDEOINPUT = "gpvideo_frontside.mp4"
 VIDEOOUTPUT = "distance_frontcam_v2.mp4"
 MODEL_PATH = "yolov8x-seg.pt"
@@ -33,7 +32,7 @@ def get_dist_homography(pts_src, point, real_w, real_l):
     return res[0][0][1]
 
 
-# --- START ---
+
 print("--- 1. FÁZIS: MOTOR KERESÉSE ---")
 device = 0 if torch.cuda.is_available() else 'cpu'
 model = YOLO(MODEL_PATH)
@@ -48,7 +47,6 @@ cv2.setMouseCallback("System", mouse_callback)
 detected_motor_box = None
 frozen_frame = None
 
-# --- 1. KERESÉS ---
 while True:
     ret, frame = video_cap.read()
     if not ret: sys.exit()
@@ -74,7 +72,6 @@ while True:
     cv2.imshow("System", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'): sys.exit()
 
-# --- 2. KALIBRÁLÁS ---
 print("\n--- 2. FÁZIS: JELÖLÉS ---")
 reference_data = {}
 
@@ -118,10 +115,8 @@ while True:
         break
     if key == ord('q'): sys.exit()
 
-# --- 3. MÉRÉS (SMART RE-ID) ---
 print("--- 3. FÁZIS: MÉRÉS ---")
 
-# BEÁLLÍTÁS: Hosszú memória (50 frame), hogy emlékezzen a régi ID-ra
 tracker = DeepSort(max_age=50, n_init=3, max_iou_distance=0.7)
 
 while True:
@@ -143,7 +138,6 @@ while True:
                 overlay[m_res > 0.5] = color
         frame = cv2.addWeighted(frame, 1, overlay, 0.4, 0)
 
-    # TRACKING
     detections = []
     for data in results.boxes.data.tolist():
         if float(data[4]) < 0.3: continue
@@ -156,13 +150,7 @@ while True:
     tracks = tracker.update_tracks(detections, frame=frame)
 
     for track in tracks:
-        # 1. Csak akkor foglalkozunk vele, ha "confirmed" (már stabil)
         if not track.is_confirmed(): continue
-
-        # 2. A LÉNYEG: SZELLEMDOBOZ SZŰRÉS
-        # A 'time_since_update' azt mondja meg, hány frame óta nem látta a YOLO ezt a motort.
-        # Ha ez > 1, akkor a tracker csak "jósol" a memóriából -> NEM RAJZOLJUK KI!
-        # Így a memóriában megmarad az ID (max_age=50 miatt), de a képernyőn nem csúszkál.
         if track.time_since_update > 1:
             continue
 
@@ -176,10 +164,9 @@ while True:
         if area_curr > 0:
             dist = reference_data["const"] / np.sqrt(area_curr)
 
-        # Rajzolás
+
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-        # ID-t is kiírom most tesztnek, hogy lásd: ugyanaz marad!
         #label = f"ID:{track.track_id} | {dist:.1f}m"
         label = f"{dist:.1f}m"
 
